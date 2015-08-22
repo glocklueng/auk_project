@@ -3,3 +3,8 @@ Obs³uga dotyku.
 FFT.
 DMA?
 inteligentnie dostrajanie zera? cap factor
+//todo: pokazywanie z rozna rozdiczlczoscia czasowa?
+//wybieranie guzikiem ilosci probek?
+//rozne takie fajne
+//todo: zastannowic sie nad zegarem i cz. probkowania jak wplywa?
+//todo: histereza
