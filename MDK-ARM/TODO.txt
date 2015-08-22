@@ -2,3 +2,4 @@ Pobieranie wszystkich próbek naraz.
 Obs³uga dotyku.
 FFT.
 DMA?
+inteligentnie dostrajanie zera? cap factor
