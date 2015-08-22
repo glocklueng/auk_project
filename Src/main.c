@@ -96,8 +96,8 @@ uint32_t scale(uint32_t value) {
 uint32_t find_trigger_point(uint32_t *samples) {
 	uint32_t middle = MAX_VALUE/2;
 	
-	for(int i = 1; i < SIZE; i++) {
-		if(samples[i] > middle && samples[i-1] < middle) {
+	for(int i = 2; i < SIZE*2; i += 2) {
+		if(samples[i] > middle && samples[i-2] < middle) {
 			return i;
 		}
 	}
@@ -106,7 +106,7 @@ uint32_t find_trigger_point(uint32_t *samples) {
 
 void display_samples(uint32_t *samples) {
 	uint32_t trigger_point = find_trigger_point(samples); //to synchronize
-	for(uint32_t i = trigger_point+1; i < SIZE; i++) {
+	for(uint32_t i = trigger_point+1; i < SIZE*2; i += 2) {
 		BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 		BSP_LCD_DrawLine(0,i-trigger_point,240,i-trigger_point);
 		BSP_LCD_DrawPixel(scale(samples[i]),i-trigger_point,LCD_COLOR_WHITE);
@@ -116,7 +116,6 @@ void display_samples(uint32_t *samples) {
 
 float32_t INPUT[SIZE];
 float32_t Output[SIZE];
-
 
 
 void fft();
@@ -162,8 +161,8 @@ while (1)
 		samples[i+1] = 0;
 		HAL_ADC_Stop(&hadc1);
 	}
-	fft();	
-	//display_samples(samples);
+	//fft();	
+	display_samples(samples);
 	
 }
 }
