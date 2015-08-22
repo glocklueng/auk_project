@@ -32,13 +32,18 @@
   */
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
+#include "stm32f4xx.h"
+#include <stdio.h>
+#include "stdint.h"
+#include "arm_math.h"
+
 
 /* USER CODE BEGIN Includes */
 #include "stm32f429i_discovery_lcd.h"
 /* USER CODE END Includes */
 
-#define SIZE 256
-
+#define SIZE 512
+#define MAX_VALUE 4096
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
 
@@ -76,11 +81,13 @@ static void MX_SPI5_Init(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-uint32_t tab[SIZE];
+uint32_t samples[SIZE*2];
+float32_t INPUT[SIZE];
+float32_t Output[SIZE];
 /* USER CODE END 0 */
 
 uint32_t scale(uint32_t value) {
-	return value/4096.0*240; //todo: ile mamy bitow na przetworniku? czy mozna zwiekszyc?
+	return value/(float32_t) MAX_VALUE *240; //todo: ile mamy bitow na przetworniku? czy mozna zwiekszyc?
 }
 
 //todo: pokazywanie z rozna rozdiczlczoscia czasowa?
@@ -88,11 +95,10 @@ uint32_t scale(uint32_t value) {
 //rozne takie fajne
 //todo: zastannowic sie nad zegarem i cz. probkowania jak wplywa?
 //todo: synchronizacja?
-
+void fft();
 int main(void)
 {
 	
-
 
   /* USER CODE BEGIN 1 */
 
@@ -128,27 +134,31 @@ int main(void)
 while (1)
   {
 	
-	for(uint16_t i = 0; i < SIZE; i++) {
+	for(uint16_t i = 0; i < SIZE; i+=2) {
 		HAL_ADC_Start(&hadc1);
 		HAL_ADC_PollForConversion(&hadc1,1000); //1000 ms for conversion? todo: change
-		tab[i] = HAL_ADC_GetValue(&hadc1);
-				
-		char str[16];
-		sprintf(str,"%d",150+scale(tab[i]));
+		samples[i] = HAL_ADC_GetValue(&hadc1);
+		
+		//samples[i] = (i%48)*2+2000;
+		samples[i+1] = 0;		
+		//char str[16];
+		//sprintf(str,"%d",150+scale(samples[i]));
 		//BSP_LCD_DisplayStringAtLine(i%12,(uint8_t *) str);
 		HAL_ADC_Stop(&hadc1);
 			
 	}
-	BSP_LCD_Clear(LCD_COLOR_WHITE);
+	//BSP_LCD_Clear(LCD_COLOR_WHITE);
 	//BSP_LCD_Clear(LCD_COLOR_WHITE);
 	
-	for(uint16_t i = 1; i < SIZE; i++) {
-		//BSP_LCD_DrawPixel(scale(tab[i]),i,LCD_COLOR_WHITE);		
-		BSP_LCD_DrawLine(scale(tab[i]),i,scale(tab[i-1]),i-1);
+	/*for(uint16_t i = 2; i < SIZE; i+=2) {
+		//BSP_LCD_DrawPixel(scale(samples[i]),i,LCD_COLOR_WHITE);		
+		BSP_LCD_DrawLine(scale(samples[i]),i,scale(samples[i-1]),i-1);
 	}
-	
-}
+	*/
 
+	fft();
+
+}
   /* USER CODE END 2 */
 
   /* Infinite loop */	
@@ -163,6 +173,37 @@ while (1)
 
 }
 
+
+/**FFT
+*/
+void fft(){
+	uint32_t i;
+	arm_cfft_radix4_instance_f32 S;	/* ARM CFFT module */
+	float32_t maxValue;				/* Max FFT value is stored here */
+	uint32_t maxIndex;				/* Index in Output array where max value is */
+	uint32_t height;					/* Height of fft value */
+	for(i = 0; i < SIZE; i+=2)
+	{
+		INPUT[i] = (samples[i]/((float32_t) MAX_VALUE/2) - 1);
+		INPUT[i+1] = 0;
+	}
+			/* Initialize the CFFT/CIFFT module, intFlag = 0, doBitReverse = 1 */
+		arm_cfft_radix4_init_f32(&S, SIZE/2, 0, 1);
+		/* Process the data through the CFFT/CIFFT module */
+		arm_cfft_radix4_f32(&S, INPUT);
+		/* Process the data through the Complex Magniture Module for calculating the magnitude at each bin */
+		arm_cmplx_mag_f32(INPUT, Output, SIZE/2);
+		/* Calculates maxValue and returns corresponding value */
+		arm_max_f32(Output, SIZE, &maxValue, &maxIndex); //todo: czy powinno byc dzielenie przez 2?
+		BSP_LCD_Clear(LCD_COLOR_WHITE);
+		/* Display data on LCD */
+		for (i = 0; i < SIZE; i++) {
+			/* Draw FFT results */
+				height = (uint16_t)(((float32_t)Output[i] / (float32_t)maxValue) * 180);
+				BSP_LCD_DrawLine(0, 30+i, height, 30+i);//30 + 2*i, 220, 30+2*i,height);
+			
+		}
+}
 /** System Clock Configuration
 */
 void SystemClock_Config(void)
@@ -180,9 +221,9 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  //RCC_OscInitStruct.PLL.PLLM = 8; org
-	RCC_OscInitStruct.PLL.PLLM = 16; //todo? 
-  RCC_OscInitStruct.PLL.PLLN = 336;
+  RCC_OscInitStruct.PLL.PLLM = 8; //todo" 
+  RCC_OscInitStruct.PLL.PLLN = 336;  
+	//RCC_OscInitStruct.PLL.PLLN = 336;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 8;
   HAL_RCC_OscConfig(&RCC_OscInitStruct);
