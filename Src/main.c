@@ -32,13 +32,20 @@
   */
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
+#include "stm32f4xx.h"
+#include <stdio.h>
+#include "stdint.h"
+#include "arm_math.h"
+
 
 /* USER CODE BEGIN Includes */
 #include "stm32f429i_discovery_lcd.h"
 /* USER CODE END Includes */
 
-#define SIZE 512
 #define MAX_VALUE 4095.0
+#define SIZE 2048
+#define FREQ_FACTOR 30.5
+#define CAP_FACTOR 50 //spadek napiecia na kondensatorze
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
@@ -77,8 +84,8 @@ static void MX_SPI5_Init(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-uint32_t samples[SIZE];
-//uint32_t samples_old[SIZE];
+
+uint32_t samples[SIZE*2];
 
 /* USER CODE END 0 */
 
@@ -107,10 +114,16 @@ void display_samples(uint32_t *samples) {
 	}
 }
 
+float32_t INPUT[SIZE];
+float32_t Output[SIZE];
+
+
+
+void fft();
 
 int main(void)
 {
-
+	
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -139,38 +152,59 @@ int main(void)
 	BSP_LCD_LayerDefaultInit(LCD_FOREGROUND_LAYER, LCD_FRAME_BUFFER);
 	BSP_LCD_SelectLayer(LCD_FOREGROUND_LAYER);
 	BSP_LCD_DisplayOn();
-	BSP_LCD_Clear(LCD_COLOR_BLACK);
-	BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
-	
 while (1)
   {
 	
-	for(uint16_t i = 0; i < SIZE; i++) {
+	for(uint16_t i = 0; i < SIZE; i+=2) {
 		HAL_ADC_Start(&hadc1);
 		HAL_ADC_PollForConversion(&hadc1,1000); //1000 ms for conversion? todo: change
 		samples[i] = HAL_ADC_GetValue(&hadc1);
+		samples[i+1] = 0;
 		HAL_ADC_Stop(&hadc1);
 	}
+	fft();	
+	//display_samples(samples);
 	
-	display_samples(samples);
-	//memcpy(&samples_old,&samples,sizeof(samples));
+}
 }
 
 
-  /* USER CODE END 2 */
-
-  /* Infinite loop */	
-  /* USER CODE BEGIN WHILE */
-
-  /* USER CODE END WHILE */
-
-  /* USER CODE BEGIN 3 */
-
-  
-  /* USER CODE END 3 */
-
+/**FFT
+*/
+void fft(){
+	uint32_t i;
+	arm_cfft_radix4_instance_f32 S;	/* ARM CFFT module */
+	float32_t maxValue;				/* Max FFT value is stored here */
+	uint32_t maxIndex;				/* Index in Output array where max value is */
+	uint32_t height;					
+	for(i = 0; i < SIZE; i+=2)
+	{
+		INPUT[i] = ((samples[i]+CAP_FACTOR)/((float32_t) MAX_VALUE/2) - 1);
+		INPUT[i+1] = 0;
+	}
+			/* Initialize the CFFT/CIFFT module, intFlag = 0, doBitReverse = 1 */
+		arm_cfft_radix4_init_f32(&S, SIZE/2, 0, 1);
+		/* Process the data through the CFFT/CIFFT module */
+		arm_cfft_radix4_f32(&S, INPUT);
+		/* Process the data through the Complex Magniture Module for calculating the magnitude at each bin */
+		arm_cmplx_mag_f32(INPUT, Output, SIZE/2);
+		/* Calculates maxValue and returns corresponding value */
+		arm_max_f32(Output, SIZE, &maxValue, &maxIndex); //todo: czy powinno byc dzielenie przez 2?
+		if(maxIndex>SIZE/4){
+			maxIndex=SIZE/2-maxIndex;		//Dla lustrzanych
+		}
+		BSP_LCD_Clear(LCD_COLOR_WHITE);
+		/* Display data on LCD */
+		for (i = 0; i < SIZE; i++) {
+			/* Draw FFT results */
+				height = (uint16_t)(((float32_t)Output[i] / (float32_t)maxValue) * 180);
+				BSP_LCD_DrawLine(0, 30+i, height, 30+i);//30 + 2*i, 220, 30+2*i,height);
+			
+		}
+		char str[16];
+		sprintf(str,"%d",(uint32_t)((float32_t)maxIndex*FREQ_FACTOR)); //Model matematyczny
+		BSP_LCD_DisplayStringAtLine(1,(uint8_t *) str);
 }
-
 /** System Clock Configuration
 */
 void SystemClock_Config(void)
@@ -188,8 +222,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  //RCC_OscInitStruct.PLL.PLLM = 8; org
-	RCC_OscInitStruct.PLL.PLLM = 8; //todo? 
+  RCC_OscInitStruct.PLL.PLLM = 8; 
   RCC_OscInitStruct.PLL.PLLN = 336;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 8;
@@ -225,8 +258,7 @@ void MX_ADC1_Init(void)
     /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
     */
   hadc1.Instance = ADC1;
-  //hadc1.Init.ClockPrescaler = ADC_CLOCKPRESCALER_PCLK_DIV4;
-	hadc1.Init.ClockPrescaler = ADC_CLOCKPRESCALER_PCLK_DIV2;
+  hadc1.Init.ClockPrescaler = ADC_CLOCKPRESCALER_PCLK_DIV4;
   hadc1.Init.Resolution = ADC_RESOLUTION12b;
   hadc1.Init.ScanConvMode = ENABLE;
   hadc1.Init.ContinuousConvMode = ENABLE;
