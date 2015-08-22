@@ -42,8 +42,10 @@
 #include "stm32f429i_discovery_lcd.h"
 /* USER CODE END Includes */
 
-#define SIZE 512
+#define SIZE 2048
 #define MAX_VALUE 4096
+#define FREQ_FACTOR 30.5
+#define CAP_FACTOR 50 //spadek napiecia na kondensatorze
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
 
@@ -181,10 +183,10 @@ void fft(){
 	arm_cfft_radix4_instance_f32 S;	/* ARM CFFT module */
 	float32_t maxValue;				/* Max FFT value is stored here */
 	uint32_t maxIndex;				/* Index in Output array where max value is */
-	uint32_t height;					/* Height of fft value */
+	uint32_t height;					
 	for(i = 0; i < SIZE; i+=2)
 	{
-		INPUT[i] = (samples[i]/((float32_t) MAX_VALUE/2) - 1);
+		INPUT[i] = ((samples[i]+CAP_FACTOR)/((float32_t) MAX_VALUE/2) - 1);
 		INPUT[i+1] = 0;
 	}
 			/* Initialize the CFFT/CIFFT module, intFlag = 0, doBitReverse = 1 */
@@ -195,6 +197,9 @@ void fft(){
 		arm_cmplx_mag_f32(INPUT, Output, SIZE/2);
 		/* Calculates maxValue and returns corresponding value */
 		arm_max_f32(Output, SIZE, &maxValue, &maxIndex); //todo: czy powinno byc dzielenie przez 2?
+		if(maxIndex>SIZE/4){
+			maxIndex=SIZE/2-maxIndex;		//Dla lustrzanych
+		}
 		BSP_LCD_Clear(LCD_COLOR_WHITE);
 		/* Display data on LCD */
 		for (i = 0; i < SIZE; i++) {
@@ -203,6 +208,9 @@ void fft(){
 				BSP_LCD_DrawLine(0, 30+i, height, 30+i);//30 + 2*i, 220, 30+2*i,height);
 			
 		}
+		char str[16];
+		sprintf(str,"%d",(uint32_t)((float32_t)maxIndex*FREQ_FACTOR)); //Model matematyczny
+		BSP_LCD_DisplayStringAtLine(1,(uint8_t *) str);
 }
 /** System Clock Configuration
 */
