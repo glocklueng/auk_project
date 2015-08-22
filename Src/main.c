@@ -37,7 +37,8 @@
 #include "stm32f429i_discovery_lcd.h"
 /* USER CODE END Includes */
 
-#define SIZE 256
+#define SIZE 512
+#define MAX_VALUE 4095.0
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
@@ -76,23 +77,39 @@ static void MX_SPI5_Init(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-uint32_t tab[SIZE];
+uint32_t samples[SIZE];
+//uint32_t samples_old[SIZE];
+
 /* USER CODE END 0 */
 
 uint32_t scale(uint32_t value) {
-	return value/4096.0*240; //todo: ile mamy bitow na przetworniku? czy mozna zwiekszyc?
+	return value/MAX_VALUE*240; //todo: ile mamy bitow na przetworniku? czy mozna zwiekszyc?
 }
 
-//todo: pokazywanie z rozna rozdiczlczoscia czasowa?
-//wybieranie guzikiem ilosci probek?
-//rozne takie fajne
-//todo: zastannowic sie nad zegarem i cz. probkowania jak wplywa?
-//todo: synchronizacja?
+uint32_t find_trigger_point(uint32_t *samples) {
+	uint32_t middle = MAX_VALUE/2;
+	
+	for(int i = 1; i < SIZE; i++) {
+		if(samples[i] > middle && samples[i-1] < middle) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+void display_samples(uint32_t *samples) {
+	uint32_t trigger_point = find_trigger_point(samples); //to synchronize
+	for(uint32_t i = trigger_point+1; i < SIZE; i++) {
+		BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+		BSP_LCD_DrawLine(0,i-trigger_point,240,i-trigger_point);
+		BSP_LCD_DrawPixel(scale(samples[i]),i-trigger_point,LCD_COLOR_WHITE);
+		
+	}
+}
+
 
 int main(void)
 {
-	
-
 
   /* USER CODE BEGIN 1 */
 
@@ -117,37 +134,28 @@ int main(void)
   MX_SPI5_Init();
 
   /* USER CODE BEGIN 2 */
-
 	BSP_LCD_Init();
 	BSP_LCD_LayerDefaultInit(LCD_BACKGROUND_LAYER, LCD_FRAME_BUFFER);
 	BSP_LCD_LayerDefaultInit(LCD_FOREGROUND_LAYER, LCD_FRAME_BUFFER);
 	BSP_LCD_SelectLayer(LCD_FOREGROUND_LAYER);
 	BSP_LCD_DisplayOn();
-	BSP_LCD_Clear(LCD_COLOR_WHITE);
-
+	BSP_LCD_Clear(LCD_COLOR_BLACK);
+	BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
+	
 while (1)
   {
 	
 	for(uint16_t i = 0; i < SIZE; i++) {
 		HAL_ADC_Start(&hadc1);
 		HAL_ADC_PollForConversion(&hadc1,1000); //1000 ms for conversion? todo: change
-		tab[i] = HAL_ADC_GetValue(&hadc1);
-				
-		char str[16];
-		sprintf(str,"%d",150+scale(tab[i]));
-		//BSP_LCD_DisplayStringAtLine(i%12,(uint8_t *) str);
+		samples[i] = HAL_ADC_GetValue(&hadc1);
 		HAL_ADC_Stop(&hadc1);
-			
-	}
-	BSP_LCD_Clear(LCD_COLOR_WHITE);
-	//BSP_LCD_Clear(LCD_COLOR_WHITE);
-	
-	for(uint16_t i = 1; i < SIZE; i++) {
-		//BSP_LCD_DrawPixel(scale(tab[i]),i,LCD_COLOR_WHITE);		
-		BSP_LCD_DrawLine(scale(tab[i]),i,scale(tab[i-1]),i-1);
 	}
 	
+	display_samples(samples);
+	//memcpy(&samples_old,&samples,sizeof(samples));
 }
+
 
   /* USER CODE END 2 */
 
@@ -181,7 +189,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   //RCC_OscInitStruct.PLL.PLLM = 8; org
-	RCC_OscInitStruct.PLL.PLLM = 16; //todo? 
+	RCC_OscInitStruct.PLL.PLLM = 8; //todo? 
   RCC_OscInitStruct.PLL.PLLN = 336;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 8;
@@ -217,7 +225,8 @@ void MX_ADC1_Init(void)
     /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
     */
   hadc1.Instance = ADC1;
-  hadc1.Init.ClockPrescaler = ADC_CLOCKPRESCALER_PCLK_DIV4;
+  //hadc1.Init.ClockPrescaler = ADC_CLOCKPRESCALER_PCLK_DIV4;
+	hadc1.Init.ClockPrescaler = ADC_CLOCKPRESCALER_PCLK_DIV2;
   hadc1.Init.Resolution = ADC_RESOLUTION12b;
   hadc1.Init.ScanConvMode = ENABLE;
   hadc1.Init.ContinuousConvMode = ENABLE;

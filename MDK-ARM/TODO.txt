@@ -3,3 +3,10 @@ Obs³uga dotyku.
 FFT.
 poprawiæ wyœwietlaniea
 dostrajanie kondensatoruf
+DMA?
+inteligentnie dostrajanie zera? cap factor
+//todo: pokazywanie z rozna rozdiczlczoscia czasowa?
+//wybieranie guzikiem ilosci probek?
+//rozne takie fajne
+//todo: zastannowic sie nad zegarem i cz. probkowania jak wplywa?
+//todo: histereza
