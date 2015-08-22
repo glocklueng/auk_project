@@ -1,3 +1,5 @@
 Pobieranie wszystkich próbek naraz.
 Obs³uga dotyku.
 FFT.
+poprawiæ wyœwietlaniea
+dostrajanie kondensatoruf

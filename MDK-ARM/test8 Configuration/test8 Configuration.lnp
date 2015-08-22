@@ -30,6 +30,12 @@
 "test8 configuration\stm32f429i_discovery_lcd.o"
 "test8 configuration\stm32f429i_discovery_sdram.o"
 "test8 configuration\ili9341.o"
+"test8 configuration\arm_cfft_radix4_f32.o"
+"test8 configuration\arm_cfft_radix4_init_f32.o"
+"test8 configuration\arm_bitreversal.o"
+"test8 configuration\arm_common_tables.o"
+"test8 configuration\arm_cmplx_mag_f32.o"
+"test8 configuration\arm_max_f32.o"
 --library_type=microlib --strict --scatter "test8 Configuration\test8 Configuration.sct"
 --diag_suppress=L6329 --summary_stderr --info summarysizes --map --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

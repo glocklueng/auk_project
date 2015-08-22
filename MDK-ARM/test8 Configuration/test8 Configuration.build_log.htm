@@ -3,37 +3,47 @@
 <pre>
 <h1>µVision Build Log</h1>
 <h2>Tool Versions:</h2>
-IDE-Version: µVision V5.15
+IDE-Version: µVision V5.16.0.0
 Copyright (C) 2015 ARM Ltd and ARM Germany GmbH. All rights reserved.
-License Information: Grzegorz Pietrusza, none, LIC=KIVRA-1CN8N-KUF4L-0RM57-I1FV9-AUPGP
+License Information: meh meh, meh, LIC=----
  
 Tool Versions:
-Toolchain:       MDK-ARM Professional  Version: 5.15.0
-Toolchain Path:  D:\Keil_v5\ARM\ARMCC\Bin
-C Compiler:      Armcc.exe V5.05 update 2 (build 169)
-Assembler:       Armasm.exe V5.05 update 2 (build 169)
-Linker/Locator:  ArmLink.exe V5.05 update 2 (build 169)
-Library Manager: ArmAr.exe V5.05 update 2 (build 169)
-Hex Converter:   FromElf.exe V5.05 update 2 (build 169)
-CPU DLL:         SARMCM3.DLL V5.15.0
+Toolchain:       MDK-Lite  Version: 5.16.0.0
+Toolchain Path:  D:\Keil\ARM\ARMCC\Bin
+C Compiler:      Armcc.exe V5.06 (build 20)
+Assembler:       Armasm.exe V5.06 (build 20)
+Linker/Locator:  ArmLink.exe V5.06 (build 20)
+Library Manager: ArmAr.exe V5.06 (build 20)
+Hex Converter:   FromElf.exe V5.06 (build 20)
+CPU DLL:         SARMCM3.DLL V5.16.0.0
 Dialog DLL:      DCM.DLL V1.13.2.0
-Target DLL:      STLink\ST-LINKIII-KEIL_SWO.dll V2.0.15.0_KEIL
+Target DLL:      STLink\ST-LINKIII-KEIL_SWO.dll V2.0.17.0
 Dialog DLL:      TCM.DLL V1.14.5.0
  
 <h2>Project:</h2>
-C:\Users\Grzegorz\Desktop\projekt_auk\test8\test8\MDK-ARM\test8.uvprojx
-Project File Date:  08/21/2015
+D:\Projekt_AuK\auk_project\MDK-ARM\test8.uvprojx
+Project File Date:  08/22/2015
 
 <h2>Output:</h2>
-*** Using Compiler 'V5.05 update 2 (build 169)', folder: 'D:\Keil_v5\ARM\ARMCC\Bin'
+*** Using Compiler 'V5.06 (build 20)', folder: 'D:\Keil\ARM\ARMCC\Bin'
 Build target 'test8 Configuration'
-"test8 Configuration\test8 Configuration.axf" - 0 Error(s), 0 Warning(s).
+compiling main.c...
+..\Src\main.c(100): warning:  #1295-D: Deprecated declaration fft - give arg types
+  void fft();
+..\Src\main.c(212): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+  		sprintf(str,"%d",(uint32_t)((float32_t)maxIndex*
+REQ_FACTOR)); //Model matematyczny
+..\Src\main.c: 2 warnings, 0 errors
+linking...
+Program Size: Code=22204 RO-data=42132 RW-data=112 ZI-data=34936  
+"test8 Configuration\test8 Configuration.axf" - 0 Error(s), 2 Warning(s).
 
 <h2>Collection of Component include folders:</h2>
-  C:\Users\Grzegorz\Desktop\projekt_auk\test8\test8\MDK-ARM\RTE
-  D:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.4.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include
+  D:\Projekt_AuK\auk_project\MDK-ARM\RTE
+  D:\Keil\ARM\PACK\Keil\STM32F4xx_DFP\2.5.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include
 
 <h2>Collection of Component Files used:</h2>
+Build Time Elapsed:  00:00:02
 </pre>
 </body>
 </html>

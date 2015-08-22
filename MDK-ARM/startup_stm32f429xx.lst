@@ -905,18 +905,18 @@ ARM Macro Assembler    Page 14
               00000000 
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
 erwork --depend="test8 configuration\startup_stm32f429xx.d" -o"test8 configurat
-ion\startup_stm32f429xx.o" -IC:\Users\Grzegorz\Desktop\projekt_auk\test8\test8\
-MDK-ARM\RTE -ID:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.4.0\Drivers\CMSIS\Device
-\ST\STM32F4xx\Include -ID:\Keil_v5\ARM\CMSIS\Include --predefine="__MICROLIB SE
+ion\startup_stm32f429xx.o" -ID:\Projekt_AuK\auk_project\MDK-ARM\RTE -ID:\Keil\A
+RM\PACK\Keil\STM32F4xx_DFP\2.5.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include -ID:
+\Keil\ARM\CMSIS\Include --predefine="__EVAL SETA 1" --predefine="__MICROLIB SET
 
 
 
 ARM Macro Assembler    Page 15 
 
 
-TA 1" --predefine="__UVISION_VERSION SETA 515" --predefine="STM32F429xx SETA 1"
- --list=startup_stm32f429xx.lst ..\Drivers\CMSIS\Device\ST\STM32F4xx\Source\Tem
-plates\arm\startup_stm32f429xx.s
+A 1" --predefine="__UVISION_VERSION SETA 516" --predefine="STM32F429xx SETA 1" 
+--list=startup_stm32f429xx.lst ..\Drivers\CMSIS\Device\ST\STM32F4xx\Source\Temp
+lates\arm\startup_stm32f429xx.s
 
 
 
@@ -2448,4 +2448,4 @@ Symbol: __main
 \arm\startup_stm32f429xx.s
 Comment: __main used once
 2 symbols
-453 symbols in table
+454 symbols in table
