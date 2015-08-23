@@ -1,12 +1,12 @@
 Pobieranie wszystkich próbek naraz.
-Obs³uga dotyku.
-FFT.
-poprawiæ wyœwietlaniea
-dostrajanie kondensatoruf
 DMA?
+Obs³uga dotyku.
+dostrajanie kondensatoruf
 inteligentnie dostrajanie zera? cap factor
-//todo: pokazywanie z rozna rozdiczlczoscia czasowa?
-//wybieranie guzikiem ilosci probek?
-//rozne takie fajne
-//todo: zastannowic sie nad zegarem i cz. probkowania jak wplywa?
-//todo: histereza
+sprobowac zwiekszyc zegar
+pokazywanie max prazka - jego f
+obcinanie rysowanie zeby nie wyjezdzalo poza ekran, zarowno fft jak i probki
+
+opcjonalnie:
+todo: pokazywanie z rozna rozdiczlczoscia czasowa? - wiecej lub mniej probek
+histereza - poprawienie synchronizacji dla szybkich przebiegow
