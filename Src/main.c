@@ -85,7 +85,7 @@ static void MX_SPI5_Init(void);
 
 /* USER CODE BEGIN 0 */
 
-uint32_t samples[SIZE*2];
+uint32_t samples[SIZE];
 
 /* USER CODE END 0 */
 
@@ -96,7 +96,7 @@ uint32_t scale(uint32_t value) {
 uint32_t find_trigger_point(uint32_t *samples) {
 	uint32_t middle = MAX_VALUE/2;
 	
-	for(int i = 2; i < SIZE*2; i += 2) {
+	for(int i = 2; i < SIZE; i += 2) {
 		if(samples[i] > middle && samples[i-2] < middle) {
 			return i;
 		}
@@ -106,9 +106,10 @@ uint32_t find_trigger_point(uint32_t *samples) {
 
 void display_samples(uint32_t *samples) {
 	uint32_t trigger_point = find_trigger_point(samples); //to synchronize
-	for(uint32_t i = trigger_point+1; i < SIZE*2; i += 2) {
-		BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-		BSP_LCD_DrawLine(0,i-trigger_point,240,i-trigger_point);
+	BSP_LCD_Clear(LCD_COLOR_BLACK);
+	for(uint32_t i = trigger_point+2; i < SIZE; i += 2) {
+		//BSP_LCD_SetTextColor(LCD_COLOR_BLACK); //old clearing
+		//BSP_LCD_DrawLine(0,i-trigger_point,240,i-trigger_point);
 		BSP_LCD_DrawPixel(scale(samples[i]),i-trigger_point,LCD_COLOR_WHITE);
 		
 	}
@@ -150,6 +151,7 @@ int main(void)
 	BSP_LCD_LayerDefaultInit(LCD_BACKGROUND_LAYER, LCD_FRAME_BUFFER);
 	BSP_LCD_LayerDefaultInit(LCD_FOREGROUND_LAYER, LCD_FRAME_BUFFER);
 	BSP_LCD_SelectLayer(LCD_FOREGROUND_LAYER);
+	BSP_LCD_Clear(LCD_COLOR_BLACK);
 	BSP_LCD_DisplayOn();
 while (1)
   {
