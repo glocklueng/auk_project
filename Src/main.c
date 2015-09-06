@@ -153,25 +153,42 @@ int main(void)
 	BSP_LCD_SelectLayer(LCD_FOREGROUND_LAYER);
 	BSP_LCD_Clear(LCD_COLOR_BLACK);
 	BSP_LCD_DisplayOn();
-while (1)
-  {
-	
-	for(uint16_t i = 0; i < SIZE; i+=2) {
-		HAL_ADC_Start(&hadc1);
-		HAL_ADC_PollForConversion(&hadc1,1000); //1000 ms for conversion? todo: change
-		samples[i] = HAL_ADC_GetValue(&hadc1);
-		samples[i+1] = 0;
-		HAL_ADC_Stop(&hadc1);
+	uint8_t Button_Value;
+	GPIO_InitTypeDef GPIO_InitStruct;
+  GPIO_InitStruct.Pin |= GPIO_PIN_0;
+  GPIO_InitStruct.Mode = 0x00;
+  GPIO_InitStruct.Pull = 0x02;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+	while (1)
+		{
+		
+		for(uint16_t i = 0; i < SIZE; i+=2) {
+			HAL_ADC_Start(&hadc1);
+			HAL_ADC_PollForConversion(&hadc1,1000); //1000 ms for conversion? todo: change
+			samples[i] = HAL_ADC_GetValue(&hadc1);
+			samples[i+1] = 0;
+			HAL_ADC_Stop(&hadc1);
+		}
+		
+		Button_Value = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
+		if( Button_Value )
+		{		
+			fft();
+			
+		}
+		else
+		{
+		
+			display_samples(samples);
+
+		}
 	}
-	//fft();	
-	display_samples(samples);
-	
-}
 }
 
 
 /**FFT
 */
+
 void fft(){
 	uint32_t i;
 	arm_cfft_radix4_instance_f32 S;	/* ARM CFFT module */
@@ -467,7 +484,9 @@ void MX_GPIO_Init(void)
   __GPIOG_CLK_ENABLE();
   __GPIOE_CLK_ENABLE();
   __GPIOD_CLK_ENABLE();
-
+	
+	
+	
 }
 
 /* USER CODE BEGIN 4 */
