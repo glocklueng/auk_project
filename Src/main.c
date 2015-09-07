@@ -44,8 +44,8 @@
 
 #define MAX_VALUE 4095.0
 #define SIZE 2048
-#define FREQ_FACTOR 30.5
-#define CAP_FACTOR 50 //spadek napiecia na kondensatorze
+#define FREQ_FACTOR 58
+#define CAP_FACTOR 5 //spadek napiecia na kondensatorze
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
@@ -78,19 +78,11 @@ static void MX_LTDC_Init(void);
 static void MX_RNG_Init(void);
 static void MX_SPI5_Init(void);
 
-/* USER CODE BEGIN PFP */
-/* Private function prototypes -----------------------------------------------*/
-
-/* USER CODE END PFP */
-
-/* USER CODE BEGIN 0 */
-
 uint32_t samples[SIZE];
 
-/* USER CODE END 0 */
 
 uint32_t scale(uint32_t value) {
-	return value/MAX_VALUE*240; //todo: ile mamy bitow na przetworniku? czy mozna zwiekszyc?
+	return value/MAX_VALUE*240;
 }
 
 uint32_t find_trigger_point(uint32_t *samples) {
@@ -108,10 +100,7 @@ void display_samples(uint32_t *samples) {
 	uint32_t trigger_point = find_trigger_point(samples); //to synchronize
 	BSP_LCD_Clear(LCD_COLOR_BLACK);
 	for(uint32_t i = trigger_point+2; i < SIZE; i += 2) {
-		//BSP_LCD_SetTextColor(LCD_COLOR_BLACK); //old clearing
-		//BSP_LCD_DrawLine(0,i-trigger_point,240,i-trigger_point);
 		BSP_LCD_DrawPixel(scale(samples[i]),i-trigger_point,LCD_COLOR_WHITE);
-		
 	}
 }
 
@@ -123,20 +112,12 @@ void fft();
 
 int main(void)
 {
-	
-  /* USER CODE BEGIN 1 */
 
-  /* USER CODE END 1 */
-
-  /* MCU Configuration----------------------------------------------------------*/
-
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
-  /* Configure the system clock */
   SystemClock_Config();
 
-  /* Initialize all configured peripherals */
+
   MX_GPIO_Init();
   MX_ADC1_Init();
   MX_DMA2D_Init();
@@ -146,7 +127,6 @@ int main(void)
   MX_RNG_Init();
   MX_SPI5_Init();
 
-  /* USER CODE BEGIN 2 */
 	BSP_LCD_Init();
 	BSP_LCD_LayerDefaultInit(LCD_BACKGROUND_LAYER, LCD_FRAME_BUFFER);
 	BSP_LCD_LayerDefaultInit(LCD_FOREGROUND_LAYER, LCD_FRAME_BUFFER);
@@ -164,7 +144,7 @@ int main(void)
 		
 		for(uint16_t i = 0; i < SIZE; i+=2) {
 			HAL_ADC_Start(&hadc1);
-			HAL_ADC_PollForConversion(&hadc1,1000); //1000 ms for conversion? todo: change
+			HAL_ADC_PollForConversion(&hadc1,1000); 
 			samples[i] = HAL_ADC_GetValue(&hadc1);
 			samples[i+1] = 0;
 			HAL_ADC_Stop(&hadc1);
@@ -207,7 +187,7 @@ void fft(){
 		/* Process the data through the Complex Magniture Module for calculating the magnitude at each bin */
 		arm_cmplx_mag_f32(INPUT, Output, SIZE/2);
 		/* Calculates maxValue and returns corresponding value */
-		arm_max_f32(Output, SIZE, &maxValue, &maxIndex); //todo: czy powinno byc dzielenie przez 2?
+		arm_max_f32(Output, SIZE, &maxValue, &maxIndex); 
 		if(maxIndex>SIZE/4){
 			maxIndex=SIZE/2-maxIndex;		//Dla lustrzanych
 		}
@@ -216,7 +196,7 @@ void fft(){
 		for (i = 0; i < SIZE; i++) {
 			/* Draw FFT results */
 				height = (uint16_t)(((float32_t)Output[i] / (float32_t)maxValue) * 180);
-				BSP_LCD_DrawLine(0, 30+i, height, 30+i);//30 + 2*i, 220, 30+2*i,height);
+				BSP_LCD_DrawLine(0, 30+i, height, 30+i);
 			
 		}
 		char str[16];
@@ -290,14 +270,14 @@ void MX_ADC1_Init(void)
 
     /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
     */
-  sConfig.Channel = ADC_CHANNEL_0;
+  sConfig.Channel = ADC_CHANNEL_5;
   sConfig.Rank = 1;
   sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
   HAL_ADC_ConfigChannel(&hadc1, &sConfig);
 
     /**Configures for the selected ADC injected channel its corresponding rank in the sequencer and its sample time 
     */
-  sConfigInjected.InjectedChannel = ADC_CHANNEL_0;
+  sConfigInjected.InjectedChannel = ADC_CHANNEL_5;
   sConfigInjected.InjectedRank = 1;
   sConfigInjected.InjectedNbrOfConversion = 1;
   sConfigInjected.InjectedSamplingTime = ADC_SAMPLETIME_3CYCLES;
@@ -465,17 +445,9 @@ void MX_FMC_Init(void)
 
 }
 
-/** Configure pins as 
-        * Analog 
-        * Input 
-        * Output
-        * EVENT_OUT
-        * EXTI
-*/
 void MX_GPIO_Init(void)
 {
 
-  /* GPIO Ports Clock Enable */
   __GPIOF_CLK_ENABLE();
   __GPIOH_CLK_ENABLE();
   __GPIOC_CLK_ENABLE();
@@ -486,39 +458,4 @@ void MX_GPIO_Init(void)
   __GPIOD_CLK_ENABLE();
 	
 	
-	
 }
-
-/* USER CODE BEGIN 4 */
-
-/* USER CODE END 4 */
-
-#ifdef USE_FULL_ASSERT
-
-/**
-   * @brief Reports the name of the source file and the source line number
-   * where the assert_param error has occurred.
-   * @param file: pointer to the source file name
-   * @param line: assert_param error line source number
-   * @retval None
-   */
-void assert_failed(uint8_t* file, uint32_t line)
-{
-  /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
-    ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
-
-}
-
-#endif
-
-/**
-  * @}
-  */ 
-
-/**
-  * @}
-*/ 
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
